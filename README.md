@@ -1,1 +1,3 @@
-# LinearniAlgebra2
+# Linearni Algebra 2
+
+Programovací úlohy.
