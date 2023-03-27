@@ -38,18 +38,36 @@ pair<float**, float**> askForMatrixes(int size)
     float** matrix = createSquareMatrix(size);
     float** matrix1 = createSquareMatrix(size);
 
+    cout << "Follow instructions to create input matrix" << endl;
+
     for(int i = 0; i < size; i++)
     {
         cout << "Row " + to_string(i + 1) + " : [insert number by number as you are asked]" << endl;
         for(int y = 0; y < size; y++)
         {
             float value = cinIntOnly("Insert number " + to_string(y + 1) + " of row " + to_string(i + 1) + ":");
-            matrix [i][y] = value;
-            matrix1 [i][y] = value;
+            matrix[i][y] = value;
+            matrix1[i][y] = value;
         }
     }
 
     return pair(matrix, matrix1);
+}
+
+//Method used for interactive creating vector
+float* askForVector(int size)
+{
+    float* vector = new float[size];
+
+    cout << "Follow instructions to create input vector" << endl;
+
+    for(int i = 0; i < size; i++)
+    {
+        float value = cinIntOnly("Insert number " + to_string(i + 1) + ":");
+        vector[i] = value;
+    }
+
+    return vector;
 }
 
 //Metod used to print matrix
@@ -68,6 +86,18 @@ void printMatrix(int size, float** matrix, string name = "")
     }
 }
 
+//Metod used to print a vector
+void printVector(int size, float* vector, string name = "")
+{
+    cout << "\nVector \"" + name + "\":" << endl;
+
+    for(int i = 0; i < size; i++)
+    {
+        cout << vector[i] << "\t";
+
+        cout << endl;
+    }
+}
 //Method selects first non zero member in column
 optional<int> selectFirst(int size, float** matrix, int column)
 {
@@ -142,6 +172,21 @@ float** submatrix(int size, int x, int y, float** matrix)
     return submatrix;
 }
 
+float** changeColumn(int size, float** matrix, float* vector, int column)
+{
+    float** toReturn = createSquareMatrix(size);
+
+    for (int i = 0; i < size; i++)
+    {
+        for (int y = 0; y < size; y++)
+        {
+            toReturn[i][y] = (y == column) ? vector[i] : matrix[i][y]; //if selected to change, change, otherwise copy
+        }
+    }
+
+    return toReturn;
+}
+
 float** calculateInverse(int size, float originalDeterminant, float** matrix)
 {
     float** inverse = createSquareMatrix(size);
@@ -150,11 +195,24 @@ float** calculateInverse(int size, float originalDeterminant, float** matrix)
     {
         for (int y = 0; y < size; y++)
         {
-            inverse[i][y] = pow(-1, i+y)*determinant(size-1, submatrix(size, y, i, matrix)) /originalDeterminant; //Cramer's rule
+            inverse[i][y] = pow(-1, i+y)*determinant(size-1, submatrix(size, y, i, matrix)) /originalDeterminant; //Calculation using adjunged matrix
         }
     }
 
     return inverse;
+}
+
+float* solve(int size, float originalDeterminant, float** matrix, float* vector)
+{
+    float* solution = new float[size];
+
+    for (int i = 0; i < size; i++)
+    {
+        float** modifiedMatrix = changeColumn(size, matrix, vector, i);
+        solution[i] = determinant(size, modifiedMatrix)/originalDeterminant;
+    }
+
+    return solution;
 }
 
 int main(void)
@@ -166,6 +224,9 @@ int main(void)
         pair<float**, float**> matrixes = askForMatrixes(size);
         printMatrix(size, matrixes.first, "inserted matrix");
 
+        float* vector = askForVector(size);
+        printVector(size, vector, "inserted vector");
+
         float originalDeterminant = determinant(size, matrixes.first);
 
         if (originalDeterminant == 0) //if determinant = 0, then singular, then no inverse exists
@@ -175,8 +236,10 @@ int main(void)
         };
 
         float** inverse = calculateInverse(size, originalDeterminant, matrixes.second);
+        float* solution = solve(size, originalDeterminant, matrixes.second, vector);
 
         printMatrix(size, inverse, "inverse matrix");
+        printVector(size, solution, "solution vector");
     }
     catch (const std::exception& ex) //handle errors
     {
