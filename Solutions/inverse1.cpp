@@ -132,7 +132,11 @@ float determinant(int size, float** matrix)
 
         int index = optIndex.value();
 
-        changeLines(matrix, index, y);
+        if (index != y)
+        {
+            changeLines(matrix, index, y);
+            result *= -1;
+        }
 
         float first = matrix[y][y]; //hold first member
         result *= first; //multiply result by another diagonal member
